@@ -11,8 +11,9 @@ def approximate_inverse(
         bounds=None,
         cache=None,
         parameters=None,
+        x0=None,
         iterations=300,
-        tolerance=1e-5,
+        tolerance=1e-12,
 ):
     """
     Calculate the approximation of the inverse Rosenblatt transformation.
@@ -52,7 +53,7 @@ def approximate_inverse(
         >>> distribution = chaospy.Normal(1000, 10)
         >>> qloc = numpy.array([0.1, 0.2, 0.9])
         >>> approximate_inverse(distribution, 0, qloc).round(4)
-        array([ 987.1845,  991.5839, 1012.8153])
+        array([ 987.1848,  991.5838, 1012.8152])
         >>> distribution.inv(qloc).round(4)
         array([ 987.1845,  991.5838, 1012.8155])
 
@@ -68,10 +69,10 @@ def approximate_inverse(
         xlower = distribution._get_lower(idx, cache.copy())
         xupper = distribution._get_upper(idx, cache.copy())
     else:
-        xlower, xupper = bounds
-    xlower = numpy.broadcast_to(xlower, qloc.shape)
-    xupper = numpy.broadcast_to(xupper, qloc.shape)
-    xloc = 0.5*(xlower+xupper)
+        xlower = numpy.broadcast_to(bounds[0], qloc.shape)
+        xupper = numpy.broadcast_to(bounds[1], qloc.shape)
+
+    xloc = (xlower+(xlower+xupper)*qloc) if x0 is None else x0
     uloc = numpy.zeros(qloc.shape)
     ulower = -qloc
     uupper = 1-qloc
